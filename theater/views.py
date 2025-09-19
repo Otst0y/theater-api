@@ -43,7 +43,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class PlayViewSet(viewsets.ModelViewSet):
     serializer_class = PlayListRetrieveSerializer
-    queryset = Play.objects.all()
+    queryset = Play.objects.prefetch_related("actors", "genres")
     action_serializer_classes = {
         "create": PlayListCreateSerializer,
         "retrieve": PlayDetailSerializer,
@@ -78,19 +78,35 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         "partial_update": PerformanceCreateSerializer,
     }
 
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related("theater_hall", "play")
+        if self.action == "retrieve":
+            return queryset.prefetch_related("play__actors", "play__genres")
+        return queryset
+
     def get_serializer_class(self):
         return self.action_serializer_classes.get(self.action, self.serializer_class)
 
 
 class TicketViewSet(viewsets.ModelViewSet):
     serializer_class = TicketListSerializer
-    queryset = Ticket.objects.all()
+    queryset = Ticket.objects.select_related(
+        "performance__play", "reservation", "performance__theater_hall"
+    )
     action_serializer_classes = {
         "create": TicketCreateSerializer,
         "retrieve": TicketDetailSerializer,
         "update": TicketCreateSerializer,
         "partial_update": TicketCreateSerializer,
     }
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action == "retrieve":
+            return queryset.prefetch_related(
+                "performance__play__actors", "performance__play__genres"
+            )
+        return queryset
 
     def get_serializer_class(self):
         return self.action_serializer_classes.get(self.action, self.serializer_class)
