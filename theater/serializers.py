@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
 
@@ -112,6 +113,38 @@ class TicketCreateSerializer(TicketListSerializer):
     class Meta:
         model = Ticket
         fields = ["id", "row", "seat", "performance", "reservation"]
+
+    def validate(self, attrs):
+        row = attrs["row"]
+        seat = attrs["seat"]
+        performance = attrs["performance"]
+
+        hall = performance.theater_hall
+
+        if row > hall.rows:
+            raise serializers.ValidationError(
+                f"The row must be between 1 and {hall.rows}"
+            )
+
+        if seat > hall.seats_in_row:
+            raise serializers.ValidationError(
+                f"The seat must be between 1 and {hall.seats_in_row}"
+            )
+
+        if Ticket.objects.filter(performance=performance, row=row, seat=seat).exists():
+            raise serializers.ValidationError(
+                "The seat is already taken. Please chose another one."
+            )
+
+        return attrs
+
+    def create(self, validated_data):
+        try:
+            return super().create(**validated_data)
+        except IntegrityError:
+            raise serializers.ValidationError(
+                "This seat just been booked by someone else. Please chose another one."
+            )
 
 
 class TicketDetailSerializer(TicketListSerializer):

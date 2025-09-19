@@ -48,7 +48,7 @@ class PlayViewSet(viewsets.ModelViewSet):
         "create": PlayListCreateSerializer,
         "retrieve": PlayDetailSerializer,
         "update": PlayListCreateSerializer,
-        "patrial_update": PlayListCreateSerializer,
+        "partial_update": PlayListCreateSerializer,
     }
 
     def get_serializer_class(self):

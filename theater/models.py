@@ -66,7 +66,7 @@ class Performance(models.Model):
     show_time = models.DateTimeField(default=Now)
 
     def __str__(self):
-        return str(self.show_time)
+        return f"{self.play.title} {self.show_time.strftime('%H:%M:%S %d-%b-%y')}"
 
 
 class Ticket(models.Model):
@@ -78,6 +78,14 @@ class Ticket(models.Model):
     reservation = models.ForeignKey(
         Reservation, null=False, on_delete=models.CASCADE, related_name="tickets"
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["performance", "row", "seat"],
+                name="unique_seat_per_performance",
+            )
+        ]
 
     def __str__(self):
         return f"Row: {self.row} - Seat: {self.seat}"
