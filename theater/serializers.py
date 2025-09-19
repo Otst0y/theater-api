@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from theater.models import Actor, Genre, Play, TheaterHall
+from theater.models import Actor, Genre, Play, TheaterHall, Reservation
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -63,3 +63,11 @@ class TheaterHallSerializer(serializers.ModelSerializer):
     class Meta:
         model = TheaterHall
         fields = ["id", "name", "rows", "seats_in_row", "total_seats"]
+
+
+class ReservationSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Reservation
+        fields = ["id", "created_at", "user"]
