@@ -57,8 +57,12 @@ class Reservation(models.Model):
 
 
 class Performance(models.Model):
-    play = models.ForeignKey(Play, on_delete=models.CASCADE, related_name="performances")
-    theater_hall = models.ForeignKey(TheaterHall, on_delete=models.CASCADE, related_name="performances")
+    play = models.ForeignKey(
+        Play, on_delete=models.CASCADE, related_name="performances"
+    )
+    theater_hall = models.ForeignKey(
+        TheaterHall, on_delete=models.CASCADE, related_name="performances"
+    )
     show_time = models.DateTimeField(default=Now)
 
     def __str__(self):
@@ -68,8 +72,12 @@ class Performance(models.Model):
 class Ticket(models.Model):
     row = models.PositiveSmallIntegerField()
     seat = models.PositiveSmallIntegerField()
-    performance = models.ForeignKey(Performance, on_delete=models.CASCADE, related_name="tickets")
-    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="tickets")
+    performance = models.ForeignKey(
+        Performance, null=False, on_delete=models.CASCADE, related_name="tickets"
+    )
+    reservation = models.ForeignKey(
+        Reservation, null=False, on_delete=models.CASCADE, related_name="tickets"
+    )
 
     def __str__(self):
         return f"Row: {self.row} - Seat: {self.seat}"

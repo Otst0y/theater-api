@@ -1,6 +1,15 @@
 from rest_framework import serializers
+from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
 
-from theater.models import Actor, Genre, Play, TheaterHall, Reservation, Performance
+from theater.models import (
+    Actor,
+    Genre,
+    Play,
+    TheaterHall,
+    Reservation,
+    Performance,
+    Ticket,
+)
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -84,3 +93,30 @@ class PerformanceCreateSerializer(PerformanceListSerializer):
 class PerformanceDetailSerializer(PerformanceListSerializer):
     play = PlayDetailSerializer(read_only=True)
     theater_hall = TheaterHallSerializer(read_only=True)
+
+
+class TicketListSerializer(serializers.ModelSerializer):
+    play_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ticket
+        fields = ["id", "row", "seat", "play_title", "reservation"]
+
+    def get_play_title(self, obj):
+        return obj.performance.play.title
+
+
+class TicketCreateSerializer(TicketListSerializer):
+    performance = PrimaryKeyRelatedField(queryset=Performance.objects.all())
+
+    class Meta:
+        model = Ticket
+        fields = ["id", "row", "seat", "performance", "reservation"]
+
+
+class TicketDetailSerializer(TicketListSerializer):
+    performance = PerformanceDetailSerializer(read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ["id", "row", "seat", "performance", "reservation"]
