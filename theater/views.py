@@ -1,4 +1,9 @@
 from rest_framework import viewsets
+from rest_framework.permissions import (
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticated,
+)
 
 from theater.models import (
     Actor,
@@ -27,8 +32,26 @@ from theater.serializers import (
 )
 
 
-class ActorViewSet(viewsets.ModelViewSet):
+class ActionBasedPermissionMixin:
+    action_permission_classes = {}
+
+    def get_permissions(self):
+        permission_classes = self.action_permission_classes.get(
+            self.action, [IsAuthenticated]
+        )
+        return [permission() for permission in permission_classes]
+
+
+class ActorViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     queryset = Actor.objects.all()
+    action_permission_classes = {
+        "create": [IsAdminUser],
+        "update": [IsAdminUser],
+        "partial_update": [IsAdminUser],
+        "destroy": [IsAdminUser],
+        "list": [IsAuthenticatedOrReadOnly],
+        "retrieve": [IsAuthenticatedOrReadOnly],
+    }
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -36,12 +59,20 @@ class ActorViewSet(viewsets.ModelViewSet):
         return ActorSerializer
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
+    action_permission_classes = {
+        "create": [IsAdminUser],
+        "update": [IsAdminUser],
+        "partial_update": [IsAdminUser],
+        "destroy": [IsAdminUser],
+        "list": [IsAuthenticatedOrReadOnly],
+        "retrieve": [IsAuthenticatedOrReadOnly],
+    }
 
 
-class PlayViewSet(viewsets.ModelViewSet):
+class PlayViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     serializer_class = PlayListRetrieveSerializer
     queryset = Play.objects.prefetch_related("actors", "genres")
     action_serializer_classes = {
@@ -50,17 +81,33 @@ class PlayViewSet(viewsets.ModelViewSet):
         "update": PlayListCreateSerializer,
         "partial_update": PlayListCreateSerializer,
     }
+    action_permission_classes = {
+        "create": [IsAdminUser],
+        "update": [IsAdminUser],
+        "partial_update": [IsAdminUser],
+        "destroy": [IsAdminUser],
+        "list": [IsAuthenticatedOrReadOnly],
+        "retrieve": [IsAuthenticatedOrReadOnly],
+    }
 
     def get_serializer_class(self):
         return self.action_serializer_classes.get(self.action, self.serializer_class)
 
 
-class TheaterHallViewSet(viewsets.ModelViewSet):
+class TheaterHallViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     serializer_class = TheaterHallSerializer
     queryset = TheaterHall.objects.all()
+    action_permission_classes = {
+        "create": [IsAdminUser],
+        "update": [IsAdminUser],
+        "partial_update": [IsAdminUser],
+        "destroy": [IsAdminUser],
+        "list": [IsAuthenticatedOrReadOnly],
+        "retrieve": [IsAuthenticatedOrReadOnly],
+    }
 
 
-class ReservationViewSet(viewsets.ModelViewSet):
+class ReservationViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     serializer_class = ReservationSerializer
     queryset = Reservation.objects.all()
 
@@ -68,7 +115,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
         return Reservation.objects.filter(user=self.request.user)
 
 
-class PerformanceViewSet(viewsets.ModelViewSet):
+class PerformanceViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     serializer_class = PerformanceListSerializer
     queryset = Performance.objects.all()
     action_serializer_classes = {
@@ -76,6 +123,12 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         "retrieve": PerformanceDetailSerializer,
         "update": PerformanceCreateSerializer,
         "partial_update": PerformanceCreateSerializer,
+    }
+    action_permission_classes = {
+        "create": [IsAdminUser],
+        "update": [IsAdminUser],
+        "partial_update": [IsAdminUser],
+        "destroy": [IsAdminUser],
     }
 
     def get_queryset(self):
@@ -88,7 +141,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         return self.action_serializer_classes.get(self.action, self.serializer_class)
 
 
-class TicketViewSet(viewsets.ModelViewSet):
+class TicketViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     serializer_class = TicketListSerializer
     queryset = Ticket.objects.select_related(
         "performance__play", "reservation", "performance__theater_hall"
@@ -98,6 +151,10 @@ class TicketViewSet(viewsets.ModelViewSet):
         "retrieve": TicketDetailSerializer,
         "update": TicketCreateSerializer,
         "partial_update": TicketCreateSerializer,
+    }
+    action_permission_classes = {
+        "list": [IsAuthenticatedOrReadOnly],
+        "retrieve": [IsAuthenticatedOrReadOnly],
     }
 
     def get_queryset(self):

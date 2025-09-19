@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField, PrimaryKeyRelatedField
+from rest_framework.relations import PrimaryKeyRelatedField
 
 from theater.models import (
     Actor,
