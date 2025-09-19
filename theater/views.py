@@ -1,14 +1,39 @@
 from rest_framework import viewsets
 
-from theater.models import Actor, Genre
-from theater.serializers import ActorSerializer, GenreSerializer
+from theater.models import Actor, Genre, Play
+from theater.serializers import (
+    ActorSerializer,
+    GenreSerializer,
+    PlayListRetrieveSerializer,
+    PlayListCreateSerializer,
+    PlayDetailSerializer,
+    ActorDetailSerializer,
+)
 
 
 class ActorViewSet(viewsets.ModelViewSet):
-    serializer_class = ActorSerializer
     queryset = Actor.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ActorDetailSerializer
+        return ActorSerializer
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
+
+
+class PlayViewSet(viewsets.ModelViewSet):
+    serializer_class = PlayListRetrieveSerializer
+    queryset = Play.objects.all()
+    action_serializer_classes = {
+        "create": PlayListCreateSerializer,
+        "retrieve": PlayDetailSerializer,
+        "update": PlayListCreateSerializer,
+        "patrial_update": PlayListCreateSerializer,
+    }
+
+    def get_serializer_class(self):
+        return self.action_serializer_classes.get(self.action, self.serializer_class)
