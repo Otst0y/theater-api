@@ -49,8 +49,6 @@ class ActorViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
         "update": [IsAdminUser],
         "partial_update": [IsAdminUser],
         "destroy": [IsAdminUser],
-        "list": [IsAuthenticatedOrReadOnly],
-        "retrieve": [IsAuthenticatedOrReadOnly],
     }
 
     def get_serializer_class(self):
@@ -67,8 +65,6 @@ class GenreViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
         "update": [IsAdminUser],
         "partial_update": [IsAdminUser],
         "destroy": [IsAdminUser],
-        "list": [IsAuthenticatedOrReadOnly],
-        "retrieve": [IsAuthenticatedOrReadOnly],
     }
 
 
@@ -86,8 +82,6 @@ class PlayViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
         "update": [IsAdminUser],
         "partial_update": [IsAdminUser],
         "destroy": [IsAdminUser],
-        "list": [IsAuthenticatedOrReadOnly],
-        "retrieve": [IsAuthenticatedOrReadOnly],
     }
 
     def get_serializer_class(self):
@@ -102,8 +96,6 @@ class TheaterHallViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
         "update": [IsAdminUser],
         "partial_update": [IsAdminUser],
         "destroy": [IsAdminUser],
-        "list": [IsAuthenticatedOrReadOnly],
-        "retrieve": [IsAuthenticatedOrReadOnly],
     }
 
 
@@ -160,6 +152,8 @@ class TicketViewSet(ActionBasedPermissionMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.action == "retrieve":
+            if not self.request.user.is_staff:
+                queryset = queryset.filter(user=self.request.user)
             return queryset.prefetch_related(
                 "performance__play__actors", "performance__play__genres"
             )
