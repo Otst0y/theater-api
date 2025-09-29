@@ -11,7 +11,7 @@ from user.views import UserViewSet, CreateUserView, ManageUserView
 app_name = "user"
 
 router = routers.DefaultRouter()
-router.register("users", UserViewSet)
+router.register("users", UserViewSet, "users")
 
 urlpatterns = [
     path("register/", CreateUserView.as_view(), name="register"),
