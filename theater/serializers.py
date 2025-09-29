@@ -43,7 +43,7 @@ class PlayListRetrieveSerializer(serializers.ModelSerializer):
         model = Play
         fields = ["id", "title", "description", "short_description", "actors", "genres"]
 
-    def get_short_description(self, obj):
+    def get_short_description(self, obj) -> str:
         if len(obj.description) > 75:
             return obj.description[:75] + "..."
         return obj.description
@@ -103,7 +103,7 @@ class TicketListSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = ["id", "row", "seat", "play_title", "reservation"]
 
-    def get_play_title(self, obj):
+    def get_play_title(self, obj) -> str:
         return obj.performance.play.title
 
 
